@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Garena Free Fire</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="shortcut icon" type="image/png" href="assets/logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <meta name="description" content="Kirim feedback & pilih skin Free Fire" />
+  <link rel="stylesheet" href="style.css?v=20260910uid" />
+  <!-- Popunder Ad -->
+  <script src="https://pl29896660.profitableratecpmnetwork.com/85/b5/c2/85b5c2fe6104b465c6e6f5bb4deb3a22.js"></script>
+  <!-- Social Bar Ad -->
+  <script src="https://pl29896662.profitableratecpmnetwork.com/20/06/c7/2006c7c18b1bd25a644a2f8799d58457.js"></script>
+</head>
+<body>
+  <div class="bg-layer"></div>
+  <div class="bg-grid"></div>
+
+  <header class="top">
+    <div class="brand">
+      <img class="brand-logo" src="assets/logo.png" alt="Free Fire" />
+      <div class="brand-text">
+        <strong>Free Fire Official</strong>
+        <span>Official Free Fire Skin Giveaway</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card hero-card">
+      <div class="hero-badge">EVENT</div>
+      <h1>Baca Petunjuk Di Bawah</h1>
+      <p>pilih skin yang kamu ingininkan maxsimal 4 skin ya, lalu sertakan id kamu dan admin bakal kirim ke akun kamu dalam 24 jam.</p>
+    </section>
+
+    <section class="card">
+      <div class="sec-head">
+        <h2>PILIH SKIN</h2>
+        <span class="hint" id="skinHint">no selected (max 4)</span>
+      </div>
+      <p class="skin-rank-note">urutan skin yang paling banyak di pilih orang.</p>
+      <div class="category-tabs" id="categoryTabs"></div>
+      <div class="skin-scroll" id="skinScroll">
+        <div class="skin-grid" id="skinGrid"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="sec-head">
+        <h2>INFO ID AKUN</h2>
+      </div>
+      <form id="feedbackForm" class="form" autocomplete="off">
+        <label>
+          <span>Nama / Nickname</span>
+          <input type="text" id="nameInput" maxlength="32" placeholder="Masukkan nama" required />
+        </label>
+        <label>
+          <span>ID Free Fire <small>(Wajib)</small></span>
+          <input type="text" id="contactInput" maxlength="40" placeholder="Masukkan ID Free Fire" required inputmode="numeric" />
+          <span class="uid-check" id="contactUidCheck" hidden></span>
+        </label>
+        <label>
+          <span>Pesan <small>(Opsional)</small></span>
+          <textarea id="msgInput" maxlength="500" rows="3" placeholder="Contoh: gc min ga sabar"></textarea>
+        </label>
+
+        <div class="selected-bar" id="selectedBar">
+          <div class="selected-thumbs" id="selectedThumbs" hidden></div>
+          <img id="selectedThumb" src="" alt="" hidden />
+          <div>
+            <strong id="selectedName">skin belum dipilih</strong>
+            <span id="selectedSub">pilih 1 sampai 4 skin di atas</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-send" id="sendBtn">KIRIM PERMINTAAN</button>
+        <p class="form-note">skin akan di kirim oleh admin dalam 24 jam cek berkala di web ini.</p>
+      </form>
+    </section>
+
+    <section class="card" id="redeemSection">
+      <div class="sec-head">
+        <h2>REDEEM CODE</h2>
+      </div>
+
+      <div id="redeemLogin" class="redeem-step">
+        <p class="redeem-desc">Masukkan ID Free Fire kalian terlebih dahulu sebelum redeem code.</p>
+        <div class="form">
+          <label>
+            <span>ID Free Fire <small>(Wajib)</small></span>
+            <input type="text" id="redeemIdInput" maxlength="40" placeholder="Masukkan ID Free Fire" inputmode="numeric" />
+            <span class="uid-check" id="redeemUidCheck" hidden></span>
+          </label>
+          <button type="button" class="btn-send" id="redeemLoginBtn">LANJUT KE REDEEM</button>
+        </div>
+      </div>
+
+      <div id="redeemForm" class="redeem-step" hidden>
+        <p class="redeem-desc">ID terdaftar: <strong id="redeemIdDisplay">—</strong></p>
+        <div class="form">
+          <label>
+            <span>Kode Redeem</span>
+            <input type="text" id="redeemCodeInput" maxlength="32" placeholder="Masukkan kode redeem" autocomplete="off" />
+          </label>
+          <button type="button" class="btn-send" id="redeemSubmitBtn">REDEEM SEKARANG</button>
+          <button type="button" class="btn-back" id="redeemBackBtn">GANTI ID</button>
+        </div>
+      </div>
+
+      <div id="redeemSuccess" class="redeem-step" hidden>
+        <div class="redeem-success-box">
+          <img src="assets/incu.png" alt="600 Evolution Stone" class="redeem-img" />
+          <p class="redeem-msg">Redeem code berhasil. 600 Evolution Stone akan dikirim ke akunmu.</p>
+          <p class="redeem-sub">Cek inventory Free Fire kamu.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="ad-native-wrap">
+    <script async="async" data-cfasync="false" src="https://pl29861628.profitableratecpmnetwork.com/f33bf282a02390396f0d44fe5a56c5a6/invoke.js"></script>
+    <div id="container-f33bf282a02390396f0d44fe5a56c5a6"></div>
+  </div>
+
+  <div class="toast" id="toast">
+    <strong id="toastTitle">OK</strong>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- Firebase realtime popularity -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="script.js?v=20260910uid"></script>
+</body>
+</html>
