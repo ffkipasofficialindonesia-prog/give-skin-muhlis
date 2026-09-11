@@ -40,40 +40,61 @@ const ITEMID2_IMG = "https://raw.githubusercontent.com/0xme/ff-resources/refs/he
 function mapCategory(itemType, name) {
   const t = String(itemType || "").toUpperCase();
   const n = String(name || "").toLowerCase();
+  // Bundle murni
   if (t === "BUNDLE" || t === "OPTIONAL_BUNDLE") return "bundle";
+  // Avatar
   if (t === "AVATAR" || n.includes("avatar")) return "avatar";
-  const gunRe = /\b(m1887|ak47|m4a1|ump|mp40|awm|groza|scar|vector|an94|famas|m14|svd|kar98|m249|m60|spas|m1014|usp|woodpecker|thompson|p90|m590|cg15|vss|sks|xm8|parafal|g36|bizon)\b/i;
-  if (gunRe.test(name) || n.includes("evo gun") || n.includes("evo king") || n.includes("evo-lution") || /(^|\s)evo(\s|$)/i.test(name)) return "senjata";
-  if (t === "COLLECTION" && gunRe.test(name)) return "senjata";
+  // Senjata / skin senjata
+  const weaponKeys = ["m1887","ak47","m4a1","ump","mp40","awm","groza","scar","vector","an94","famas","m14","svd","kar98","m249","m60","spas","m1014","usp","desert eagle","woodpecker","evo gun","gun skin","rifle","smg","sniper","shotgun","pistol","weapon","blade","katana","scythe","m590","thompson","p90"];
+  if (weaponKeys.some((k) => n.includes(k))) return "senjata";
+  if (t === "COLLECTION" && /skin|gun|weapon/.test(n)) return "senjata";
+  // Baju / clothes
   if (t === "CLOTHES") return "baju";
+  // sisanya
   return "lainnya";
 }
 
 function isAllowedItem(x) {
   const t = String(x.itemType || "").toUpperCase();
-  if (!["CLOTHES", "BUNDLE", "COLLECTION", "OPTIONAL_BUNDLE", "AVATAR"].includes(t)) return false;
+  const ct = String(x.collectionType || "").toUpperCase();
   const name = String(x.description || "").trim();
   if (name.length < 3) return false;
   const icon = String(x.icon || "").trim();
   if (!icon || icon === "NONE") return false;
   const low = name.toLowerCase();
   const rare = String(x.Rare || x.rare || "").toUpperCase();
+
   // sampah
-  if (/(test|unused|nulla|temp|fragment|debris|token|voucher|mystery|crate|loot|gift box|choice crate|\bpack\b)/i.test(low)) return false;
-  // potongan baju kecil
+  if (/(test|unused|nulla|temp|fragment|debris|token|voucher|mystery|crate|loot|gift box|choice crate)/i.test(low)) return false;
   if (t === "CLOTHES" && /\((head|bottom|shoes|mask|facepaint|top|hair)\)/i.test(name)) return false;
 
   const gunRe = /\b(m1887|ak47|m4a1|ump|mp40|awm|groza|scar|vector|an94|famas|m14|svd|kar98|m249|m60|spas|m1014|usp|woodpecker|thompson|p90|m590|cg15|vss|sks|xm8|parafal|g36|bizon)\b/i;
-  const isGun = gunRe.test(name) || low.includes("evo gun") || low.includes("evo king") || low.includes("evo-lution") || /(^|\s)evo(\s|$)/i.test(name);
+  const isEvo = low.includes("evo gun") || low.includes("evo king") || low.includes("evo-lution") || /(^|\s)evo(\s|$)/i.test(name);
+  const isGunName = gunRe.test(name) || isEvo;
+  const isWeapon = ct === "WEAPON_SKIN" || (t === "COLLECTION" && isGunName);
 
-  if (t === "AVATAR") return true;
+  // rarity groups
+  const redOrange = /^(RED|ORANGE|ORANGE_PLUS)$/.test(rare);
+  const purpleOk = /^(RED|ORANGE|ORANGE_PLUS|PURPLE|PURPLE_PLUS)$/.test(rare);
+
+  // SENJATA: hanya merah & oren + evo gun
+  if (isWeapon) {
+    if (isEvo) return true;
+    return redOrange;
+  }
+
+  // BUNDLE: ungu + merah + oren
   if (t === "BUNDLE" || t === "OPTIONAL_BUNDLE") {
     if (/token|crate|pack/.test(low)) return false;
-    return true;
+    return purpleOk;
   }
-  // semua skin senjata + evo max di kategori COLLECTION
-  if (t === "COLLECTION" && isGun) return true;
-  if (t === "CLOTHES" && /RED|ORANGE|PURPLE/.test(rare)) return true;
+
+  // BAJU: ungu + merah + oren
+  if (t === "CLOTHES") return purpleOk;
+
+  // Avatar: ungu + merah + oren
+  if (t === "AVATAR" || ct === "HEADPIC") return purpleOk;
+
   return false;
 }
 
@@ -882,7 +903,6 @@ function initSkinSearch() {
   initUidCheckers();
   initRedeem();
   initScrollReveal();
-  initSkinSearch();
   await loadAllSkinsFromItemID2();
   initPopularityRealtime();
   renderCategoryTabs();
