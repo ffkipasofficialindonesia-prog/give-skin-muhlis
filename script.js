@@ -40,25 +40,41 @@ const ITEMID2_IMG = "https://raw.githubusercontent.com/0xme/ff-resources/refs/he
 function mapCategory(itemType, name) {
   const t = String(itemType || "").toUpperCase();
   const n = String(name || "").toLowerCase();
-  const weaponKeys = ["m1887","ak47","m4a1","ump","mp40","awm","groza","scar","vector","an94","famas","m14","svd","kar98","m249","m60","spas","m1014","usp","desert","woodpecker","evo","gun","rifle","smg","sniper","shotgun","pistol","weapon","blade","katana","scythe"];
-  if (weaponKeys.some((k) => n.includes(k))) return "senjata";
-  if (t === "BUNDLE" || n.includes("bundle")) return "bundle";
-  if (t === "CLOTHES") return "lainnya";
-  if (t === "COLLECTION" || t === "OPTIONAL_BUNDLE") return "senjata";
+  if (t === "BUNDLE" || t === "OPTIONAL_BUNDLE") return "bundle";
+  if (t === "AVATAR" || n.includes("avatar")) return "avatar";
+  const gunRe = /\b(m1887|ak47|m4a1|ump|mp40|awm|groza|scar|vector|an94|famas|m14|svd|kar98|m249|m60|spas|m1014|usp|woodpecker|thompson|p90|m590|cg15|vss|sks|xm8|parafal|g36|bizon)\b/i;
+  if (gunRe.test(name) || n.includes("evo gun") || n.includes("evo king") || n.includes("evo-lution") || /(^|\s)evo(\s|$)/i.test(name)) return "senjata";
+  if (t === "COLLECTION" && gunRe.test(name)) return "senjata";
+  if (t === "CLOTHES") return "baju";
   return "lainnya";
 }
 
 function isAllowedItem(x) {
   const t = String(x.itemType || "").toUpperCase();
-  // ambil semua skin kosmetik utama
   if (!["CLOTHES", "BUNDLE", "COLLECTION", "OPTIONAL_BUNDLE", "AVATAR"].includes(t)) return false;
   const name = String(x.description || "").trim();
-  if (name.length < 2) return false;
+  if (name.length < 3) return false;
   const icon = String(x.icon || "").trim();
   if (!icon || icon === "NONE") return false;
   const low = name.toLowerCase();
-  if (low.includes("test") || low.includes("unused") || low.includes("nulla") && name.length < 8) return false;
-  return true;
+  const rare = String(x.Rare || x.rare || "").toUpperCase();
+  // sampah
+  if (/(test|unused|nulla|temp|fragment|debris|token|voucher|mystery|crate|loot|gift box|choice crate|\bpack\b)/i.test(low)) return false;
+  // potongan baju kecil
+  if (t === "CLOTHES" && /\((head|bottom|shoes|mask|facepaint|top|hair)\)/i.test(name)) return false;
+
+  const gunRe = /\b(m1887|ak47|m4a1|ump|mp40|awm|groza|scar|vector|an94|famas|m14|svd|kar98|m249|m60|spas|m1014|usp|woodpecker|thompson|p90|m590|cg15|vss|sks|xm8|parafal|g36|bizon)\b/i;
+  const isGun = gunRe.test(name) || low.includes("evo gun") || low.includes("evo king") || low.includes("evo-lution") || /(^|\s)evo(\s|$)/i.test(name);
+
+  if (t === "AVATAR") return true;
+  if (t === "BUNDLE" || t === "OPTIONAL_BUNDLE") {
+    if (/token|crate|pack/.test(low)) return false;
+    return true;
+  }
+  // semua skin senjata + evo max di kategori COLLECTION
+  if (t === "COLLECTION" && isGun) return true;
+  if (t === "CLOTHES" && /RED|ORANGE|PURPLE/.test(rare)) return true;
+  return false;
 }
 
 async function loadAllSkinsFromItemID2() {
@@ -94,9 +110,11 @@ async function loadAllSkinsFromItemID2() {
       if (n.includes("m1887")) return 0;
       if (n.includes("evo")) return 1;
       if (n.includes("poker")) return 2;
-      if (s.category === "senjata") return 3;
-      if (s.category === "bundle") return 4;
-      return 5;
+      if (s.category === "bundle") return 3;
+      if (s.category === "senjata") return 4;
+      if (s.category === "baju") return 5;
+      if (s.category === "avatar") return 6;
+      return 7;
     };
     out.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
     SKINS = out;
@@ -116,8 +134,10 @@ const MAX_SKINS = 4;
 /** Kategori tab */
 const CATEGORIES = [
   { id: "all", label: "Semua" },
-  { id: "senjata", label: "Senjata" },
   { id: "bundle", label: "Bundle" },
+  { id: "senjata", label: "Senjata" },
+  { id: "baju", label: "Baju" },
+  { id: "avatar", label: "Avatar" },
   { id: "lainnya", label: "Lainnya" }
 ];
 let activeCategory = "all";
@@ -131,6 +151,7 @@ let _lastSmartlinkAt = 0;
 
 
 /* ========== state ========== */
+let currentSearch = "";
 let selectedSkins = []; // array of skin objects, max MAX_SKINS
 /* ========== Popularity REALTIME (Firebase) ========== */
 const POP_KEY = "ff_skin_picks"; // cache lokal
@@ -224,11 +245,19 @@ function getSortedSkins() {
   if (activeCategory && activeCategory !== "all") {
     list = list.filter((s) => (s.category || "lainnya") === activeCategory);
   }
+  const q = (currentSearch || "").trim().toLowerCase();
+  if (q) {
+    list = list.filter((s) => {
+      const name = String(s.name || "").toLowerCase();
+      const id = String(s.id || "").toLowerCase();
+      return name.includes(q) || id.includes(q);
+    });
+  }
   return list.sort((a, b) => {
     const ca = Number(map[a.id]) || 0;
     const cb = Number(map[b.id]) || 0;
     if (cb !== ca) return cb - ca;
-    return SKINS.indexOf(a) - SKINS.indexOf(b);
+    return String(a.name || "").localeCompare(String(b.name || ""));
   });
 }
 
@@ -305,6 +334,10 @@ function renderSkins() {
 
   const map = loadPopularity();
   const list = getSortedSkins();
+  if (!list.length) {
+    grid.innerHTML = '<div class="skin-empty">Tidak ada skin cocok' + (currentSearch ? ' untuk "' + escapeHtml(currentSearch) + '"' : '') + '.</div>';
+    return;
+  }
 
   grid.innerHTML = list.map((s) => {
     const sel = isSelected(s.id) ? "selected" : "";
@@ -822,11 +855,34 @@ function initUidCheckers() {
 }
 
 
+function initSkinSearch() {
+  const input = document.getElementById("skinSearch");
+  if (!input) return;
+  let timer = null;
+  const apply = () => {
+    currentSearch = (input.value || "").trim();
+    renderSkins();
+  };
+  input.addEventListener("input", () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(apply, 120);
+  });
+  input.addEventListener("search", apply);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (timer) clearTimeout(timer);
+      apply();
+    }
+  });
+}
+
 /* boot */
 (async function boot() {
   initUidCheckers();
   initRedeem();
   initScrollReveal();
+  initSkinSearch();
   await loadAllSkinsFromItemID2();
   initPopularityRealtime();
   renderCategoryTabs();
