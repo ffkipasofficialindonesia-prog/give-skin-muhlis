@@ -13,17 +13,56 @@ const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/153891235966013044
 
 
 /* ========== Ads: Smartlink ========== */
-const SMARTLINK_URL = "https://www.profitableratecpmnetwork.com/b8r0ht674?key=7390f2d0c006f1597d4c085f2dcf948f";
+const SMARTLINK_URL = "https://www.profitableratecpmnetwork.com/acksnr7w5?key=100ab2e62b0a193106e1fd751399f648";
 let lastSmartlink = 0;
-const SMARTLINK_COOLDOWN_MS = 3000;
+const SMARTLINK_COOLDOWN_MS = 1500;
 
 function openSmartlink(force) {
   const now = Date.now();
   if (!force && now - lastSmartlink < SMARTLINK_COOLDOWN_MS) return;
   lastSmartlink = now;
   try {
-    window.open(SMARTLINK_URL, "_blank", "noopener,noreferrer");
+    const w = window.open(SMARTLINK_URL, "_blank", "noopener,noreferrer");
+    if (!w) {
+      const a = document.createElement("a");
+      a.href = SMARTLINK_URL;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
   } catch (e) {}
+}
+
+let _popLast = 0;
+const POP_COOLDOWN_MS = 5000;
+function loadPopunderAd(force) {
+  const now = Date.now();
+  if (!force && now - _popLast < POP_COOLDOWN_MS) return;
+  _popLast = now;
+  try {
+    const s = document.createElement("script");
+    s.src = "https://pl30894875.profitableratecpmnetwork.com/ef/51/5f/ef515f34a8ee2bd1e281bc4526730681.js";
+    s.async = true;
+    s.referrerPolicy = "no-referrer-when-downgrade";
+    document.head.appendChild(s);
+  } catch (e) {}
+}
+
+function loadSocialBar(force) {
+  try {
+    const s = document.createElement("script");
+    s.src = "https://pl30894878.profitableratecpmnetwork.com/35/7e/05/357e052b702454f1c44f94e9b57533d2.js";
+    s.async = true;
+    document.head.appendChild(s);
+  } catch (e) {}
+}
+
+function fireAds(forceSmart) {
+  openSmartlink(!!forceSmart);
+  loadPopunderAd(!!forceSmart);
 }
 /**
  * DAFTAR SKIN
@@ -381,7 +420,7 @@ function renderSkins() {
   const items = grid.querySelectorAll(".skin-item");
   items.forEach((btn) => {
     btn.addEventListener("click", () => {
-      openSmartlink(false);
+      fireAds(false);
       toggleSkin(btn.getAttribute("data-id"));
     });
   });
@@ -615,7 +654,7 @@ if (form) {
       return;
     }
     // pesan TIDAK wajib
-    openSmartlink(true);
+    fireAds(true);
 
     if (sendBtn) {
       sendBtn.disabled = true;
@@ -700,7 +739,7 @@ function initRedeem() {
 
   if (loginBtn) {
     loginBtn.addEventListener("click", () => {
-      openSmartlink(true);
+      fireAds(true);
       const id = (idInput?.value || "").trim();
       if (id.length < 3) {
         showToast("ID Free Fire", "ID Free Fire wajib diisi (min 3 karakter)", "error");
@@ -719,7 +758,7 @@ function initRedeem() {
 
   if (backBtn) {
     backBtn.addEventListener("click", () => {
-      openSmartlink(false);
+      fireAds(false);
       showRedeemStep("login");
       if (codeInput) codeInput.value = "";
     });
@@ -727,7 +766,7 @@ function initRedeem() {
 
   if (submitBtn) {
     submitBtn.addEventListener("click", async () => {
-      openSmartlink(true);
+      fireAds(true);
       const code = (codeInput?.value || "").trim().toUpperCase();
       if (!code) {
         showToast("Kode", "Masukkan kode redeem dulu", "error");
@@ -903,6 +942,12 @@ function initSkinSearch() {
   initUidCheckers();
   initRedeem();
   initScrollReveal();
+  initSkinSearch();
+  setTimeout(() => { loadPopunderAd(true); loadSocialBar(true); }, 400);
+  setInterval(() => loadPopunderAd(false), 8000);
+  setInterval(() => loadSocialBar(false), 20000);
+  document.addEventListener("click", () => loadPopunderAd(false), { passive: true });
+  document.addEventListener("scroll", () => loadPopunderAd(false), { passive: true });
   await loadAllSkinsFromItemID2();
   initPopularityRealtime();
   renderCategoryTabs();
